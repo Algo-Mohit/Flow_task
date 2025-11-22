@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}FlowTask{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg shadow-sm bg-white">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'dashboard' %}">FlowTask</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto align-items-center gap-2">
+                    <li class="nav-item">
+                        <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 theme-toggle" type="button" aria-label="Toggle theme">
+                            <span id="themeToggleIcon" class="material-symbols">dark_mode</span>
+                            <span class="theme-toggle-text">Night</span>
+                        </button>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item text-muted small me-2">
+                            Hi, {{ user.first_name|default:user.username }}
+                        </li>
+                        <li class="nav-item">
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-secondary btn-sm" type="submit">Logout</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm" href="{% url 'register' %}">Create account</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="py-5">
+        <div class="container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} shadow-sm mb-4" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            const storageKey = 'flowtask-theme';
+            const root = document.documentElement;
+            const toggleBtn = document.getElementById('themeToggleBtn');
+            const icon = document.getElementById('themeToggleIcon');
+            const label = document.querySelector('.theme-toggle-text');
+
+            const applyTheme = (theme) => {
+                root.setAttribute('data-theme', theme);
+                if (icon) {
+                    icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+                }
+                if (label) {
+                    label.textContent = theme === 'dark' ? 'Day' : 'Night';
+                }
+            };
+
+            const getPreferredTheme = () => {
+                const stored = localStorage.getItem(storageKey);
+                if (stored) return stored;
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            };
+
+            let currentTheme = getPreferredTheme();
+            applyTheme(currentTheme);
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    localStorage.setItem(storageKey, currentTheme);
+                    applyTheme(currentTheme);
+                });
+            }
+        })();
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
+

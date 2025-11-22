@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Create account · FlowTask{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card card border-0 shadow-xl">
+        <div class="row g-0 align-items-stretch">
+            <div class="col-lg-5 d-none d-lg-flex">
+                <div class="auth-highlight text-white">
+                    <span class="auth-pill">
+                        <span class="material-symbols">auto_awesome</span>
+                        FlowTask Studio
+                    </span>
+                    <h2 class="h3 fw-semibold mb-3">Design your most intentional day.</h2>
+                    <p class="auth-quote">
+                        Visual progress rings, deadline heatmaps, and gentle nudges keep your projects
+                        moving — even when your day gets wild.
+                    </p>
+                    <div class="form-divider"></div>
+                    <div class="pill-list mb-3">
+                        <span>Quick capture</span>
+                        <span>Deadline radar</span>
+                        <span>Celebration confetti</span>
+                    </div>
+                    <p class="small opacity-75">
+                        Loved by makers, students, and operators who think in color and flow.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-7 bg-body">
+                <div class="form-card">
+                    <p class="form-section-title">Create workspace</p>
+                    <h1 class="h3 mb-2">Let's craft your FlowTask identity ✨</h1>
+                    <p class="form-helper mb-4">
+                        A single login powers both the web app and future mobile companion.
+                    </p>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="form-helper">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <div class="form-divider"></div>
+                        <div class="d-grid gap-3 login-actions">
+                            <button class="btn btn-primary" type="submit">Launch my workspace</button>
+                            <p class="text-center small link-muted mb-0">
+                                Already a member?
+                                <a href="{% url 'login' %}">Sign in instead</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

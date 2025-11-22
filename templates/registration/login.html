@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in · FlowTask{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card card border-0 shadow-xl">
+        <div class="row g-0 align-items-stretch">
+            <div class="col-lg-5 d-none d-lg-flex">
+                <div class="auth-highlight text-white">
+                    <span class="auth-pill">
+                        <span class="material-symbols">bolt</span>
+                        FlowTask Pulse
+                    </span>
+                    <div class="auth-side-icon">
+                        <span class="material-symbols">dashboard_customize</span>
+                    </div>
+                    <h2 class="h3 fw-semibold mb-3">Turn chaotic lists into a calm command center.</h2>
+                    <p class="auth-quote">
+                        “The dark / light workspace adapts to every hour of my day —
+                        I stay on track without eye strain.”
+                    </p>
+                    <div class="form-divider"></div>
+                    <div class="pill-list">
+                        <span>Pin priorities</span>
+                        <span>Live progress</span>
+                        <span>Smart reminders</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 bg-body">
+                <div class="form-card">
+                    <p class="form-section-title">Sign in</p>
+                    <h1 class="h3 mb-2">Welcome back 👋</h1>
+                    <p class="form-helper mb-4">Log in to continue sculpting your perfect day.</p>
+                    <form method="post" novalidate class="login-form">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors.0 }}
+                            </div>
+                        {% endif %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <div class="form-divider"></div>
+                        <div class="d-grid gap-3 login-actions">
+                            <button class="btn btn-primary" type="submit">Access workspace</button>
+                            <p class="text-center small link-muted mb-0">
+                                New here?
+                                <a href="{% url 'register' %}">Create your FlowTask space</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

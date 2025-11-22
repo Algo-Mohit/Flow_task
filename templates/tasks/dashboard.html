@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · FlowTask{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-0">Your command center</h1>
+        <p class="text-muted mb-0">Plan, prioritize, and finish strong.</p>
+    </div>
+    <div class="ms-auto">
+        <a href="{% url 'task_create' %}" class="btn btn-primary">
+            <span class="me-2">+</span> New task
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="summary-card">
+            <p class="text-muted mb-1">Overall progress</p>
+            <div class="d-flex align-items-baseline gap-2">
+                <span class="display-6 fw-bold">{{ summary.overall_progress }}%</span>
+            </div>
+            <div class="progress mt-3" role="progressbar" aria-valuenow="{{ summary.overall_progress }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar bg-primary" style="width: {{ summary.overall_progress }}%"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="summary-card">
+            <p class="text-muted mb-1">Completed</p>
+            <p class="h3 mb-0">{{ summary.completed }}</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="summary-card">
+            <p class="text-muted mb-1">In progress</p>
+            <p class="h3 mb-0">{{ summary.in_progress }}</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="summary-card {% if summary.overdue %}border-danger{% endif %}">
+            <p class="text-muted mb-1">Overdue</p>
+            <p class="h3 mb-0 text-danger">{{ summary.overdue }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <form class="row g-3 align-items-end mb-4">
+                    <div class="col-md-5">
+                        <label class="form-label">Search</label>
+                        <input type="search" class="form-control" placeholder="Find tasks..." name="q" value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All tasks</option>
+                            {% for key, label in tasks.model.Status.choices %}
+                                <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-grid">
+                        <button class="btn btn-outline-secondary" type="submit">Filter</button>
+                    </div>
+                </form>
+
+                {% if tasks %}
+                    <div class="task-grid">
+                        {% for task in tasks %}
+                            <article class="task-card {% if task.is_overdue %}task-card-overdue{% endif %}">
+                                <div class="d-flex align-items-start gap-2">
+                                    <form method="post" action="{% url 'task_toggle_pin' task.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="pin-btn {% if task.is_pinned %}active{% endif %}" title="Pin task">
+                                            <span class="material-symbols">push_pin</span>
+                                        </button>
+                                    </form>
+                                    <div class="w-100">
+                                        <div class="d-flex justify-content-between align-items-start gap-3">
+                                            <h2 class="h5 mb-1">{{ task.title }}</h2>
+                                            <span class="badge text-bg-light text-uppercase">{{ task.get_priority_display }}</span>
+                                        </div>
+                                        <p class="text-muted small mb-3">{{ task.description|default:"No details yet." }}</p>
+                                        <div class="d-flex flex-wrap align-items-center gap-3 small text-muted mb-3">
+                                            <span class="badge status-badge status-{{ task.status }}">{{ task.get_status_display }}</span>
+                                            {% if task.due_date %}
+                                                <span class="d-flex align-items-center gap-1 {% if task.is_overdue %}text-danger{% endif %}">
+                                                    <span class="material-symbols icon">event</span>
+                                                    Due {{ task.due_date }}
+                                                </span>
+                                            {% endif %}
+                                            <span class="d-flex align-items-center gap-1">
+                                                <span class="material-symbols icon">schedule</span>
+                                                Updated {{ task.updated_at|timesince }} ago
+                                            </span>
+                                        </div>
+                                        <div class="progress progress-thin mb-3">
+                                            <div class="progress-bar" style="width: {{ task.progress }}%">
+                                                {{ task.progress }}%
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <form method="post" action="{% url 'task_update_status' task.pk %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="completed">
+                                                <button class="btn btn-sm btn-success" {% if task.status == task.Status.COMPLETED %}disabled{% endif %}>
+                                                    Mark done
+                                                </button>
+                                            </form>
+                                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'task_update' task.pk %}">Edit</a>
+                                            <a class="btn btn-sm btn-outline-danger" href="{% url 'task_delete' task.pk %}">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <p class="mb-2">No tasks match your filters yet.</p>
+                        <a class="btn btn-primary" href="{% url 'task_create' %}">Add your first task</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h6 text-uppercase text-muted mb-3">Upcoming deadlines</h2>
+                {% if upcoming %}
+                    <ul class="list-unstyled mb-0">
+                        {% for task in upcoming %}
+                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div>
+                                    <p class="mb-1 fw-semibold">{{ task.title }}</p>
+                                    <span class="text-muted small">{{ task.get_status_display }}</span>
+                                </div>
+                                <span class="badge text-bg-primary">{{ task.due_date }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No upcoming deadlines. Enjoy the calm!</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 text-uppercase text-muted mb-3">Focus tips</h2>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li>Pin your top priorities for the day.</li>
+                    <li>Update progress daily to stay accountable.</li>
+                    <li>Break larger tasks into smaller milestones.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
